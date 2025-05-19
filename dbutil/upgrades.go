@@ -79,6 +79,10 @@ func (db *Database) getVersion(ctx context.Context) (version, compat int, err er
 const (
 	tableExistsPostgres = "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name=$1)"
 	tableExistsSQLite   = "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND tbl_name=?1)"
+	tableExistsMSSQL    = `IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = @p1)
+    							SELECT 1 AS TableExists
+							ELSE
+    							SELECT 0 AS TableExists`
 )
 
 func (db *Database) TableExists(ctx context.Context, table string) (exists bool, err error) {
@@ -87,6 +91,8 @@ func (db *Database) TableExists(ctx context.Context, table string) (exists bool,
 		err = db.QueryRow(ctx, tableExistsSQLite, table).Scan(&exists)
 	case Postgres:
 		err = db.QueryRow(ctx, tableExistsPostgres, table).Scan(&exists)
+	case MSSQL:
+		err = db.QueryRow(ctx, tableExistsMSSQL, table).Scan(&exists)
 	default:
 		err = ErrUnsupportedDialect
 	}
@@ -96,6 +102,10 @@ func (db *Database) TableExists(ctx context.Context, table string) (exists bool,
 const (
 	columnExistsPostgres = "SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name=$1 AND column_name=$2)"
 	columnExistsSQLite   = "SELECT EXISTS(SELECT 1 FROM pragma_table_info(?1) WHERE name=?2)"
+	ColumnExistsMSSQL    = `IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @p1 AND COLUMN_NAME = @p2)
+    							SELECT 1 AS ColumnExists
+							ELSE
+    							SELECT 0 AS ColumnExists`
 )
 
 func (db *Database) ColumnExists(ctx context.Context, table, column string) (exists bool, err error) {
@@ -104,6 +114,8 @@ func (db *Database) ColumnExists(ctx context.Context, table, column string) (exi
 		err = db.QueryRow(ctx, columnExistsSQLite, table, column).Scan(&exists)
 	case Postgres:
 		err = db.QueryRow(ctx, columnExistsPostgres, table, column).Scan(&exists)
+	case MSSQL:
+		err = db.QueryRow(ctx, ColumnExistsMSSQL, table, column).Scan(&exists)
 	default:
 		err = ErrUnsupportedDialect
 	}

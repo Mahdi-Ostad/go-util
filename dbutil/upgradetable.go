@@ -249,13 +249,15 @@ func sqlUpgradeFunc(fileName string, lines [][]byte) upgradeFunc {
 	}
 }
 
-func splitSQLUpgradeFunc(sqliteData, postgresData string) upgradeFunc {
+func splitSQLUpgradeFunc(sqliteData, postgresData, mssqlData string) upgradeFunc {
 	return func(ctx context.Context, db *Database) (err error) {
 		switch db.Dialect {
 		case SQLite:
 			_, err = db.Exec(ctx, sqliteData)
 		case Postgres:
 			_, err = db.Exec(ctx, postgresData)
+		case MSSQL:
+			_, err = db.Exec(ctx, mssqlData)
 		default:
 			err = fmt.Errorf("unknown dialect %s", db.Dialect)
 		}
@@ -266,13 +268,19 @@ func splitSQLUpgradeFunc(sqliteData, postgresData string) upgradeFunc {
 func parseSplitSQLUpgrade(name string, fs fullFS, skipNames map[string]struct{}) (from, to, compat int, message string, txn TxnMode, fn upgradeFunc) {
 	postgresName := fmt.Sprintf("%s.postgres.sql", name)
 	sqliteName := fmt.Sprintf("%s.sqlite.sql", name)
+	mssqlName := fmt.Sprintf("%s.sqlserver.sql", name)
 	skipNames[postgresName] = struct{}{}
 	skipNames[sqliteName] = struct{}{}
+	skipNames[mssqlName] = struct{}{}
 	postgresData, err := fs.ReadFile(postgresName)
 	if err != nil {
 		panic(err)
 	}
 	sqliteData, err := fs.ReadFile(sqliteName)
+	if err != nil {
+		panic(err)
+	}
+	mssqlData, err := fs.ReadFile(mssqlName)
 	if err != nil {
 		panic(err)
 	}
@@ -291,7 +299,7 @@ func parseSplitSQLUpgrade(name string, fs fullFS, skipNames map[string]struct{})
 	} else if txn != sqliteTxn {
 		panic(fmt.Errorf("mismatching transaction flag in postgres and sqlite versions of %s: %s != %s", name, txn, sqliteTxn))
 	}
-	fn = splitSQLUpgradeFunc(string(sqliteData), string(postgresData))
+	fn = splitSQLUpgradeFunc(string(sqliteData), string(postgresData), string(mssqlData))
 	return
 }
 
