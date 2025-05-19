@@ -173,7 +173,11 @@ func (db *Database) setVersion(ctx context.Context, version, compat int) error {
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(ctx, fmt.Sprintf("INSERT INTO %s (version, compat) VALUES ($1, $2)", db.VersionTable), version, compat)
+	if db.Dialect == MSSQL {
+		_, err = db.Exec(ctx, fmt.Sprintf("INSERT INTO %s (version_info, compat) VALUES (@p1, @p2)", db.VersionTable), version, compat)
+	} else {
+		_, err = db.Exec(ctx, fmt.Sprintf("INSERT INTO %s (version, compat) VALUES ($1, $2)", db.VersionTable), version, compat)
+	}
 	return err
 }
 
