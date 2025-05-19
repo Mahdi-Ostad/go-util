@@ -49,7 +49,11 @@ func (db *Database) upgradeVersionTable(ctx context.Context) error {
 				return fmt.Errorf("failed to create version table: %w", err)
 			}
 		} else {
-			_, err = db.Exec(ctx, fmt.Sprintf("ALTER TABLE %s ADD COLUMN compat INTEGER", db.VersionTable))
+			if db.Dialect == MSSQL {
+				_, err = db.Exec(ctx, fmt.Sprintf("ALTER TABLE %s ADD compat INT", db.VersionTable))
+			} else {
+				_, err = db.Exec(ctx, fmt.Sprintf("ALTER TABLE %s ADD COLUMN compat INTEGER", db.VersionTable))
+			}
 			if err != nil {
 				return fmt.Errorf("failed to add compat column to version table: %w", err)
 			}
@@ -64,7 +68,11 @@ func (db *Database) getVersion(ctx context.Context) (version, compat int, err er
 	}
 
 	var compatNull sql.NullInt32
-	err = db.QueryRow(ctx, fmt.Sprintf("SELECT version, compat FROM %s LIMIT 1", db.VersionTable)).Scan(&version, &compatNull)
+	if db.Dialect == MSSQL {
+		err = db.QueryRow(ctx, fmt.Sprintf("SELECT TOP 1 version_info, compat FROM %s", db.VersionTable)).Scan(&version, &compatNull)
+	} else {
+		err = db.QueryRow(ctx, fmt.Sprintf("SELECT version, compat FROM %s LIMIT 1", db.VersionTable)).Scan(&version, &compatNull)
+	}
 	if errors.Is(err, sql.ErrNoRows) {
 		err = nil
 	}
