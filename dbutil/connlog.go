@@ -73,6 +73,15 @@ func (le *LoggingExecable) ExecContext(ctx context.Context, query string, args .
 	return res, err
 }
 
+func (le *LoggingExecable) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
+	start := time.Now()
+	query = le.db.mutateQuery(query)
+	res, err := le.UnderlyingExecable.PrepareContext(ctx, query)
+	err = addErrorLine(query, err)
+	le.db.Log.QueryTiming(ctx, "Prepare", query, nil, -1, time.Since(start), err)
+	return res, err
+}
+
 func (le *LoggingExecable) QueryContext(ctx context.Context, query string, args ...any) (Rows, error) {
 	start := time.Now()
 	query = le.db.mutateQuery(query)
