@@ -65,6 +65,9 @@ func addErrorLine(query string, err error) error {
 }
 
 func (le *LoggingExecable) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	start := time.Now()
 	query = le.db.mutateQuery(query)
 	res, err := le.UnderlyingExecable.ExecContext(ctx, query, args...)
@@ -74,6 +77,9 @@ func (le *LoggingExecable) ExecContext(ctx context.Context, query string, args .
 }
 
 func (le *LoggingExecable) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	start := time.Now()
 	query = le.db.mutateQuery(query)
 	res, err := le.UnderlyingExecable.PrepareContext(ctx, query)
@@ -83,6 +89,9 @@ func (le *LoggingExecable) PrepareContext(ctx context.Context, query string) (*s
 }
 
 func (le *LoggingExecable) QueryContext(ctx context.Context, query string, args ...any) (Rows, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	start := time.Now()
 	query = le.db.mutateQuery(query)
 	rows, err := le.UnderlyingExecable.QueryContext(ctx, query, args...)
@@ -99,6 +108,9 @@ func (le *LoggingExecable) QueryContext(ctx context.Context, query string, args 
 }
 
 func (le *LoggingExecable) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	start := time.Now()
 	query = le.db.mutateQuery(query)
 	row := le.UnderlyingExecable.QueryRowContext(ctx, query, args...)
@@ -134,6 +146,9 @@ type TxnOptions struct {
 }
 
 func (ld *loggingDB) BeginTx(ctx context.Context, opts *TxnOptions) (*LoggingTxn, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	if opts == nil {
 		opts = &TxnOptions{}
 	}

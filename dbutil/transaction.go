@@ -58,14 +58,14 @@ var ErrAcquireDeadlock = errors.New("attempt to acquire connection without conte
 
 func (db *Database) BeginTx(ctx context.Context, opts *TxnOptions) (*LoggingTxn, error) {
 	if ctx == nil {
-		panic("BeginTx() called with nil ctx")
+		ctx = context.Background()
 	}
 	return db.LoggingDB.BeginTx(ctx, opts)
 }
 
 func (db *Database) DoTxn(ctx context.Context, opts *TxnOptions, fn func(ctx context.Context) error) error {
 	if ctx == nil {
-		panic("DoTxn() called with nil ctx")
+		ctx = context.Background()
 	}
 	if ctx.Value(db.txnCtxKey) != nil {
 		zerolog.Ctx(ctx).Trace().Msg("Already in a transaction, not creating a new one")
@@ -146,7 +146,7 @@ func (db *Database) DoTxn(ctx context.Context, opts *TxnOptions, fn func(ctx con
 
 func (db *Database) Execable(ctx context.Context) Execable {
 	if ctx == nil {
-		panic("Conn() called with nil ctx")
+		return &db.LoggingDB
 	}
 	txn, ok := ctx.Value(db.txnCtxKey).(Transaction)
 	if ok {
@@ -160,7 +160,7 @@ func (db *Database) Execable(ctx context.Context) Execable {
 
 func (db *Database) AcquireConn(ctx context.Context) (Conn, error) {
 	if ctx == nil {
-		return nil, fmt.Errorf("AcquireConn() called with nil ctx")
+		ctx = context.Background()
 	}
 	_, ok := ctx.Value(db.txnCtxKey).(Transaction)
 	if ok {
