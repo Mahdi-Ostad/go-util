@@ -88,7 +88,7 @@ func (le *LoggingExecable) PrepareContext(ctx context.Context, query string) (Lo
 	return LoggingStmt{
 		Stmt:  res,
 		Log:   le.db.Log,
-		Query: query,
+		Query: "STMT: " + query,
 	}, err
 }
 
