@@ -86,8 +86,9 @@ func (le *LoggingExecable) PrepareContext(ctx context.Context, query string) (Lo
 	err = addErrorLine(query, err)
 	le.db.Log.QueryTiming(ctx, "Prepare", query, nil, -1, time.Since(start), err)
 	return LoggingStmt{
-		Stmt: res,
-		Log:  le.db.Log,
+		Stmt:  res,
+		Log:   le.db.Log,
+		Query: query,
 	}, err
 }
 

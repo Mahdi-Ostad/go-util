@@ -8,13 +8,14 @@ import (
 
 type LoggingStmt struct {
 	*sql.Stmt
-	Log DatabaseLogger
+	Log   DatabaseLogger
+	Query string
 }
 
 func (s *LoggingStmt) Exec(args ...any) (sql.Result, error) {
 	start := time.Now()
 	res, err := s.Stmt.Exec(args...)
-	err = addErrorLine("STMT", err)
+	err = addErrorLine(s.Query, err)
 	s.Log.QueryTiming(context.Background(), "Exec", "STMT", args, -1, time.Since(start), err)
 	return res, err
 }
