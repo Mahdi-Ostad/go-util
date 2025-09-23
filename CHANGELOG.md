@@ -1,3 +1,37 @@
+# v0.9.1 (2025-09-16)
+
+* *(dbutil)* Added general documentation.
+* *(random)* Added `StringCharset` for generating a random string with a custom
+  character set and `AppendSequence` for generating a random slice with a
+  completely arbitrary types.
+* *(exslices)* Added methods for deduplicating a slice by custom key.
+* *(exsync)* Added `WaitTimeoutCtx` for waiting for an `Event` with both
+  a timeout and a context.
+
+# v0.9.0 (2025-08-16)
+
+* Bumped minimum Go version to 1.24.
+* **Breaking change *(exhttp)*** Refactored HandleErrors middleware to take raw
+  response data instead of functions returning response data.
+* *(requestlog)* Added option to recover and log panics.
+* *(exhttp)* Added `syscall.EPIPE` to `IsNetworkError` checks.
+* *(exsync)* Added `Notify` method for waking up all `Event` waiters without
+  setting the flag. This is the atomic equivalent of `Set()` immediately
+  followed by `Clear()`.
+* *(exbytes)* Added `UnsafeString` method for converting a byte slice to a
+  string without copying.
+* *(exstrings)* Added `CollapseSpaces` to replace multiple sequential spaces
+  with one.
+* *(exstrings)* Added `PrefixByteRunLength` to count the number of occurrences
+  of a given byte at the start of a string.
+* *(base58)* Fixed panic when input contains non-ASCII characters.
+
+# v0.8.8 (2025-06-16)
+
+* *(requestlog)* Added option to log `X-Forwarded-For` header value.
+* *(exstrings)* Added `LongestSequenceOfFunc` as a customizable version of
+  `LongestSequenceOf`
+
 # v0.8.7 (2025-05-16)
 
 * *(jsonbytes)* Added utility for url-safe base64 to complement the existing
