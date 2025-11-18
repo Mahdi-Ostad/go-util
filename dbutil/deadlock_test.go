@@ -16,7 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"go.mau.fi/util/dbutil"
-	_ "go.mau.fi/util/dbutil/litestream"
 )
 
 func initTestDB(t *testing.T) *dbutil.Database {
