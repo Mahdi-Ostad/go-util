@@ -1,3 +1,28 @@
+# v0.9.3 (2025-11-16)
+
+* *(unicodeurls,confusables,emojirunes,variationselector)* Updated to Unicode v17.
+* *(dbutil)* Added option to log all queries without arguments.
+* *(exmaps)* Added non-synchronous equivalent of `exsync.Set`.
+* *(exslices)* Added utilities for deleting items by value.
+* *(exslices)* Added non-synchronous `Stack` type.
+* *(exstrings)* Added `LongestCommonPrefix`.
+* *(shlex)* Added support for line continuations with backslashes.
+* *(progver)* Fixed linkified version for tags.
+
+# v0.9.2 (2025-10-16)
+
+* *(progver)* Added program version calculation utility like the one used by
+  mautrix bridges and Meowlnir.
+* *(dbutil)* Added `sqlite3-fk-wal-fullsync` driver which is otherwise
+  equivalent to `sqlite3-fk-wal`, but sets `PRAGMA synchronous=FULL` for better
+  crash resistance.
+* *(dbutil)* Added explicit error if comment prefix (`--`) isn't at the start of
+  the line when using dialect filters with the `(lines commented)` modifier.
+* *(exsync)* Added NewMapWithData, Clear, Len and CopyFrom methods for maps.
+* *(exsync)* Added iterators for maps and sets.
+* *(jsontime)* Changed `Unix*()` methods and `jsontime.U*Int()` functions to
+  treat 0 and the zero `time.Time` value as the same.
+
 # v0.9.1 (2025-09-16)
 
 * *(dbutil)* Added general documentation.
