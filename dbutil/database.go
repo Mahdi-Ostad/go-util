@@ -11,7 +11,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 
@@ -133,14 +132,37 @@ type Database struct {
 
 var ForceDeadlockDetection bool
 
-var positionalParamPattern = regexp.MustCompile(`\$(\d+)`)
+func isASCIIDigit(c byte) bool {
+	return c >= '0' && c <= '9'
+}
+
+// replacePositionalParams rewrites $1-style placeholders into SQLite's ?1
+// form, equivalent to regexp `\$(\d+)` -> "?$1". Hand-rolled because it
+// runs on every query and the regexp engine cost adds up.
+func replacePositionalParams(query, character string) string {
+	dollar := strings.IndexByte(query, '$')
+	if dollar == -1 {
+		return query
+	}
+	var out strings.Builder
+	out.Grow(len(query))
+	out.WriteString(query[:dollar])
+	for i := dollar; i < len(query); i++ {
+		if query[i] == '$' && i+1 < len(query) && isASCIIDigit(query[i+1]) {
+			out.WriteByte(character)
+		} else {
+			out.WriteByte(query[i])
+		}
+	}
+	return out.String()
+}
 
 func (db *Database) mutateQuery(query string) string {
 	switch db.Dialect {
 	case SQLite:
-		return positionalParamPattern.ReplaceAllString(query, "?$1")
+		return replacePositionalParams(query, "?")
 	case MSSQL:
-		return positionalParamPattern.ReplaceAllString(query, "@p$1")
+		return replacePositionalParams(query, "@p")
 	default:
 		return query
 	}
