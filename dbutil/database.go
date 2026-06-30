@@ -149,7 +149,7 @@ func replacePositionalParams(query, character string) string {
 	out.WriteString(query[:dollar])
 	for i := dollar; i < len(query); i++ {
 		if query[i] == '$' && i+1 < len(query) && isASCIIDigit(query[i+1]) {
-			out.WriteByte(character)
+			out.WriteString(character)
 		} else {
 			out.WriteByte(query[i])
 		}

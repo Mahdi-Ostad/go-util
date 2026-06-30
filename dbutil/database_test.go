@@ -35,7 +35,7 @@ func TestReplacePositionalParams(t *testing.T) {
 	}
 	for _, query := range cases {
 		expected := regexReplacePositionalParams(query)
-		actual := replacePositionalParams(query)
+		actual := replacePositionalParams(query, "?")
 		if actual != expected {
 			t.Errorf("mismatch for %q:\nregexp:  %q\nscanner: %q", query, expected, actual)
 		}
@@ -49,7 +49,7 @@ func TestReplacePositionalParamsExhaustive(t *testing.T) {
 	var build func(prefix string, depth int)
 	build = func(prefix string, depth int) {
 		expected := regexReplacePositionalParams(prefix)
-		actual := replacePositionalParams(prefix)
+		actual := replacePositionalParams(prefix, "?")
 		if actual != expected {
 			t.Errorf("mismatch for %q: regexp=%q scanner=%q", prefix, expected, actual)
 		}
@@ -66,7 +66,7 @@ func TestReplacePositionalParamsExhaustive(t *testing.T) {
 func TestReplacePositionalParamsNoAllocWithoutPlaceholders(t *testing.T) {
 	query := "SELECT * FROM table WHERE nothing"
 	allocs := testing.AllocsPerRun(100, func() {
-		_ = replacePositionalParams(query)
+		_ = replacePositionalParams(query, "?")
 	})
 	if allocs != 0 {
 		t.Errorf("expected 0 allocations for query without placeholders, got %.1f", allocs)
@@ -78,7 +78,7 @@ func BenchmarkReplacePositionalParams(b *testing.B) {
 	b.Run("scanner", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			_ = replacePositionalParams(query)
+			_ = replacePositionalParams(query, "?")
 		}
 	})
 	b.Run("regexp", func(b *testing.B) {
