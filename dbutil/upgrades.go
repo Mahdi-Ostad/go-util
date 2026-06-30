@@ -56,7 +56,11 @@ func (db *Database) upgradeVersionTable(ctx context.Context) error {
 		if tableExists, err := db.TableExists(ctx, db.VersionTable); err != nil {
 			return fmt.Errorf("failed to check if version table exists: %w", err)
 		} else if !tableExists {
-			_, err = db.Exec(ctx, fmt.Sprintf("CREATE TABLE %s (version INTEGER, compat INTEGER)", db.VersionTable))
+			if db.Dialect == MSSQL {
+				_, err = db.Exec(ctx, fmt.Sprintf("CREATE TABLE %s (version_info INT, compat INT)", db.VersionTable))
+			} else {
+				_, err = db.Exec(ctx, fmt.Sprintf("CREATE TABLE %s (version INTEGER, compat INTEGER)", db.VersionTable))
+			}
 			if err != nil {
 				return fmt.Errorf("failed to create version table: %w", err)
 			}
