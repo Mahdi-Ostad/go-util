@@ -4,9 +4,6 @@ go 1.26.4
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/petermattis/goid v0.0.0-20260226131333-17d1149c6ac6
-	github.com/rs/zerolog v1.34.0
-	github.com/mattn/go-sqlite3 v1.14.45
 	github.com/petermattis/goid v0.0.0-20260330135022-df67b199bc81
 	github.com/rs/zerolog v1.35.1
 	github.com/stretchr/testify v1.11.1
