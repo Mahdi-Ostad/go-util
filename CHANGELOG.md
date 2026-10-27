@@ -1,3 +1,39 @@
+# v0.11.0 (2026-10-16)
+
+* *(configupgrade)* Added `DoBytes` to upgrade an in-memory config rather than
+  reading from a file.
+* *(exerrors)* Added `RecoverToError` helper for converting a panic value to
+  a proper error.
+* *(pblite)* Added support for decoding trailing objects.
+* *(exhttp)* Added support for detecting some Windows-specific network errors.
+* *(ffmpeg)* Added option to override how the `ffmpeg` command is executed.
+* *(exsync)* Added unbounded queue type.
+* *(exsync)* Added channel-based mutex type for use with contexts.
+* *(exmaps,exsync)* Added helpers for creating prefilled sets.
+
+# v0.10.1 (2026-09-16)
+
+* Bumped minimum Go version to 1.26.
+* *(glob)* Fixed `Compile` returning a typed nil if regex compilation failed.
+* *(progver)* Changed `MarkdownDescription` to be consistent with the format of
+  `VersionDescription`.
+* *(fallocate)* Fixed syscall flags on Linux to not modify logical file size.
+
+# v0.10.0 (2026-08-16)
+
+* **Breaking change *(dbutil)*** Replaced Register methods of UpgradeTable
+  with builder-style methods to ensure other packages don't inject upgrades
+  accidentally.
+* *(dbutil)* Added more advanced reflect scanners that read struct tags.
+* *(exsync)* Added `KeyedMutex` type.
+
+# v0.9.11 (2026-07-16)
+
+* *(exsync)* Added `Has()` method for `Map`.
+* *(exsync)* Changed `Event.Set()` to return whether the event state was
+  changed.
+* *(jsontime)* Changed string types to allow empty string.
+
 # v0.9.10 (2026-06-16)
 
 * *(exhtml)* Added a variant of the standard `EscapeString` which writes the

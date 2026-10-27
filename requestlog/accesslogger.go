@@ -10,6 +10,8 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
+
+	"go.mau.fi/util/exerrors"
 )
 
 const (
@@ -35,11 +37,24 @@ type Options struct {
 	Recover bool
 	// A filter to not log certain requests, if not given, FilterHealthRequests will be used
 	Filter func(r *http.Request, crw *CountingResponseWriter) bool
+
+	OKLevel          *zerolog.Level
+	ClientErrorLevel *zerolog.Level
+	ServerErrorLevel *zerolog.Level
 }
 
 func AccessLogger(opts Options) func(http.Handler) http.Handler {
 	if opts.Filter == nil {
 		opts.Filter = FilterHealthRequests
+	}
+	if opts.OKLevel == nil {
+		opts.OKLevel = new(zerolog.InfoLevel)
+	}
+	if opts.ClientErrorLevel == nil {
+		opts.ClientErrorLevel = new(zerolog.WarnLevel)
+	}
+	if opts.ServerErrorLevel == nil {
+		opts.ServerErrorLevel = new(zerolog.ErrorLevel)
 	}
 
 	return func(next http.Handler) http.Handler {
@@ -54,7 +69,7 @@ func AccessLogger(opts Options) func(http.Handler) http.Handler {
 
 			start := time.Now()
 
-			fillRequestLog := func(requestLog *zerolog.Event) {
+			fillRequestLog := func(requestLog *zerolog.Event) *zerolog.Event {
 				requestDuration := time.Since(start)
 
 				if userAgent := r.UserAgent(); userAgent != "" {
@@ -92,6 +107,7 @@ func AccessLogger(opts Options) func(http.Handler) http.Handler {
 				if crw.ResponseBody != nil {
 					logRequestMaybeJSON(requestLog, "response_body", crw.ResponseBody.Bytes())
 				}
+				return requestLog
 			}
 
 			if opts.Recover {
@@ -106,16 +122,9 @@ func AccessLogger(opts Options) func(http.Handler) http.Handler {
 							w.WriteHeader(crw.StatusCode)
 						}
 
-						requestLog := log.Error()
-						fillRequestLog(requestLog)
-
-						requestLog.Bytes(zerolog.ErrorStackFieldName, debug.Stack())
-						if err, ok := rvr.(error); ok {
-							requestLog.Err(err)
-						} else {
-							requestLog.Any(zerolog.ErrorFieldName, rvr)
-						}
-						requestLog.Msg("Access")
+						fillRequestLog(log.Err(exerrors.RecoverToError(rvr))).
+							Bytes(zerolog.ErrorStackFieldName, debug.Stack()).
+							Msg("Access")
 					}
 				}()
 			}
@@ -128,17 +137,15 @@ func AccessLogger(opts Options) func(http.Handler) http.Handler {
 				return
 			}
 
-			var requestLog *zerolog.Event
+			var level zerolog.Level
 			if crw.StatusCode >= 500 {
-				requestLog = log.Error()
+				level = *opts.ServerErrorLevel
 			} else if crw.StatusCode >= 400 {
-				requestLog = log.Warn()
+				level = *opts.ClientErrorLevel
 			} else {
-				requestLog = log.Info()
+				level = *opts.OKLevel
 			}
-
-			fillRequestLog(requestLog)
-			requestLog.Msg("Access")
+			fillRequestLog(log.WithLevel(level)).Msg("Access")
 		})
 	}
 }
